@@ -1,0 +1,64 @@
+import scipy
+import statsmodels.api as sm
+from statsmodels.tools.tools import add_constant
+from scipy import stats
+from scipy.stats import shapiro
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import warnings
+import keras
+import statsmodels
+from keras.models import Sequential
+from keras.layers import Dense
+from keras.layers import LSTM
+from keras.layers import Dropout
+from keras.layers import *
+from keras.preprocessing.sequence import TimeseriesGenerator
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.metrics import mean_squared_error
+from sklearn.metrics import mean_absolute_error
+from statsmodels.stats.outliers_influence import variance_inflation_factor
+from sklearn import linear_model
+from statsmodels.tsa.stattools import adfuller
+warnings.filterwarnings("ignore")
+df = pd.read_csv("C:\\Users\\Samir Prasun\\Desktop\\production forecasting\\Oil price estimation\\Oil_price.csv")
+
+Y = df.WTI_price.values
+
+result = adfuller(Y)
+print('ADF Statistic: %f' % result[0])
+print('p-value: %f' % result[1])
+
+stat, p = shapiro(Y)
+print('Statistics=%.3f, p=%.3f' % (stat, p))
+# interpret
+alpha = 0.05
+if p > alpha:
+	print('Sample looks Gaussian (fail to reject H0)')
+else:
+	print('Sample does not look Gaussian (reject H0)')
+    
+x = df.drop(['WTI_price', 'Date', 'Monthly_Consumption_Mbbl', 'Monthly_Production_Mbbl' ], axis=1)
+##x = add_constant(df.X)
+vif = pd.DataFrame()
+vif = [variance_inflation_factor(x.values, i) for i in range(x.shape[1])]
+
+print(vif)
+
+##regr = linear_model.LinearRegression()
+##regr.fit(df.X, Y)
+X = sm.add_constant(x) # adding a constant
+ 
+model_new = sm.OLS(Y, X).fit()
+predictions = model_new.predict(X) 
+ 
+print(X.shape)
+
+import pickle
+with open('C:\\Users\\Samir Prasun\\Desktop\\production forecasting\\Oil price estimation\\trained_model.pkl', 'wb') as f:
+    pickle.dump(model_new, f)
+with open('C:\\Users\\Samir Prasun\\Desktop\\production forecasting\\Oil price estimation\\trained_model.pkl', 'rb') as f:
+    model = pickle.load(f)
+    
+print(model.predict([[1.0, 1000.0, 50.0]]))
