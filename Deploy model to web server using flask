@@ -1,0 +1,25 @@
+import numpy as np
+from flask import Flask, request, jsonify, render_template
+import pickle
+import requests
+app = Flask(__name__, template_folder='C:\\Users\\Samir Prasun\\Desktop\\production forecasting\\Oil price estimation')
+model = pickle.load(open('C:\\Users\\Samir Prasun\\Desktop\\production forecasting\\Oil price estimation\\trained_model.pkl', 'rb'))
+
+@app.route('/')
+def home():
+    return render_template('index.html')
+
+
+
+
+@app.route('/results',methods=['POST'])
+def results():
+
+    data = request.get_json(force=True)
+    prediction = model.predict([np.array(list(data.values()))])
+
+    output = prediction[0]
+    return jsonify(output)
+
+if __name__ == "__main__":
+    app.run(debug=True, use_reloader=False)
