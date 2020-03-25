@@ -1,0 +1,6 @@
+import requests
+
+url = ' http://127.0.0.1:5000/results'
+r = requests.post(url,json={'Const':1, 'Rig_count':1000, 'Temperature':50})
+
+print(r.json())
